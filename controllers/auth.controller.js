@@ -1,5 +1,6 @@
 import { User } from "../models/User.js";
 import jwt from 'jsonwebtoken';
+import { generateRefreshToken, generateToken } from "../utils/tokenManager.js";
 
 export const register = async(req, res) => {
     const {email, password} = req.body;
@@ -40,11 +41,24 @@ export const login = async(req, res) => {
         }
 
         //generar el token con JWT
-        const token = jwt.sign({uid: user._id}, process.env.JWT_SECRET)
+        const {token, expiresIn} = generateToken(user.id)
 
-        return res.json({ ok: 'login', token: token});
+        generateRefreshToken(user.id, res)
+
+        return res.json({ ok: 'login', token, expiresIn});
+        //return res.json(generateToken(user.id));
     } catch (error) {
         console.log(error);
         return res.status(500).json({error: 'Error de servidor'});
+    }
+};
+
+export const infoUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.uid).lean(); //con lean devuelvo el objeto simple sin todos los metodos de mongoose
+        return res.json({email: user.email});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({error: 'error de servidor'});
     }
 };
