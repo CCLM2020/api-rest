@@ -10,17 +10,37 @@
     <div>
         <h2 id="app">Email: </h2>
 
+        <button id="logout">Cerra Sesión</button>
     </div>
 
     <script>
+        const logout = document.getElementById('logout');
+        logout.addEventListener('click', async ()=> {
+            const res = await fetch('/api/v1/auth/logout', {
+                method: 'GET',
+            });
+            console.log(res);
+        });
+
         document.addEventListener('DOMContentLoaded', async (e) => {
             try {
                 //const token = localStorage.getItem('token');
+                const resToken = await fetch('/api/v1/auth/refresh', {
+                    method: 'GET',
+                    // headers: {
+                    //     'Authorization': `Bearer ${token}`,
+                    //     'Content-Type': 'application/json',
+                    // },
+                    credentials: 'include',
+                    //body: JSON.stringify({ email: email.value, password: password.value })
+                });
+
+                const {token} = await resToken.json();
 
                 const res = await fetch('/api/v1/auth/protected', {
                     method: 'GET',
                     headers: {
-                        //'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                     credentials: 'include',
